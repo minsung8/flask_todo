@@ -16,6 +16,8 @@ def home():
 
         fcuser = Fcuser.query.filter_by(userid=userid).first()
         todos = Todo.query.filter_by(fcuser_id=fcuser.id)
+    else:
+        return redirect('/register')
 
     return render_template('home.html', userid=userid, todos=todos)
 
@@ -60,5 +62,5 @@ db.app = app
 db.create_all()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
 

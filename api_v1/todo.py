@@ -13,7 +13,7 @@ def send_slack(msg):
 
 @api.route('/todos/done', methods=['PUT'])
 def todos_done():
-    userid = session.get('userid', 1)
+    userid = session.get('userid', None)
     if not userid:
         return jsonify(), 401
 
@@ -78,10 +78,17 @@ def slack_todo():
 
     ret_msg = ''
     if cmd == 'create':
-        todo_name = args[0]
+        todo_user_id = args[0]
+        todo_name = args[1]
+        todo_due = args[2]
+        
+        fcuser = Fcuser.query.filter_by(userid=todo_user_id).first()
 
         todo = Todo()
+        todo.fcuser_id = fcuser.id
         todo.title = todo_name
+        todo.due = todo_due
+        todo.status = 0
 
         db.session.add(todo)
         db.session.commit()
@@ -89,8 +96,23 @@ def slack_todo():
         send_slack('[%s] "%s"할 일을 만들었습니다 '% (str(datetime.datetime.now()), todo_name))
 
     elif cmd == 'list':
-        todos = Todo.query.all()
-        for i, todo in enumerate(todos):
-            ret_msg += '%d. %s (~ %s)\n' % (i + 1, todo.title, str(todo.tstamp))
-    
-    return ret_msg
+        todo_user_id = args[0]
+        fcuser = Fcuser.query.filter_by(userid=todo_user_id).first()
+        todos = Todo.query.filter_by(fcuser_id=fcuser.id)
+        for todo in todos:
+            ret_msg += '%d. %s (~ %s, %d)\n' % (todo.id, todo.title, todo.due, ('미완료', '완료')[todo.status])
+    elif cmd == 'doen':
+        todo_id = args[0]
+        todo = Todo.query.filter_by(id=todo_id).first()
+
+        todo.status = 1
+        db.session.commit()
+
+    elif cmd == 'list':
+        todo_id = args[0]
+        todo = Todo.query.filter_by(id=todo_id).first()
+
+        todo.status = 0
+        db.session.commit()
+
+    return ret_msg  

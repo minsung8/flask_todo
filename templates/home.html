@@ -1,5 +1,34 @@
 <html>
   <head>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Menu</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          </li>
+            <ul class="nav">
+              {% if userid %}
+              <li class="nav-item">
+                <a class="nav-link active" href="/logout">Logout</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="/login">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/register">Register</a>
+              </li>
+              {% endif %}
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -61,45 +90,45 @@
           window.location = "/";
         }); 
       }
+
+      function deleteTodo(todo_id) {
+        $.ajax({
+          url: "/api/v1/todos",
+          contentType: "application/json",
+          method: "DELETE",
+          data: JSON.stringify({
+            todo_id: todo_id
+          }),
+        }).done(function (res) {
+          $("#title").val("");
+          $("#date").val("");
+
+          window.location = "/";
+        }); 
+      }
     </script>
-  </head>
+        <div class="alert alert-primary col-12" role="alert">
+          환영합니다! {{ userid }} 님 
+        </div>
   <body>
     <div class="container">
       <div class="row mt-5">
-        <h1>Home</h1>
-      </div>
-      <div class="row mt-5">
+        <h1 class="display-1">To Do List</h1>
         <div class="col-12">
-          <ul class="nav">
-            {% if userid %}
-            <li class="nav-item">
-              <a class="nav-link active" href="/logout">로그아웃</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">{{ userid }}</a>
-            </li>
-            {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="/login">로그인</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/register">회원가입</a>
-            </li>
-            {% endif %}
-          </ul>
+
         </div>
       </div>
       <div class="row mt-5">
-        <h3>생성</h3>
+        <h3>Create To Do</h3>
         <div class="col-12">
           <input
             type="text"
             class="form-control"
             id="title"
-            placeholder="할 일"
+            placeholder="내용"
           />
         </div>
-        <div class="col-12 col-sm-7 mt-2">
+        <div class="col-12 col-sm-1 mt-2">
           <input
             type="text"
             class="form-control"
@@ -114,24 +143,26 @@
         </div>
       </div>
       <div class="row mt-5">
-        <h3>목록</h3>
+        <h3>To Do List</h3>
         <div class="col-12">
           <table class="table">
             <thead>
               <tr>
-                <th scope="col">#</th>
-                <th scope="col">할 일</th>
+                <th scope="col">번호</th>
+                <th scope="col">내용</th>
                 <th scope="col">기한</th>
                 <th scope="col">완료처리</th>
+                <th scope="col"></th>
               </tr>
             </thead>
             <tbody>
-              {% for todo in todos %} {% if todo.status %}
+              {% for todo in todos %}
+              {% if todo.status==1 %}
               <tr>
                 <th scope="row"><del>{{ todo.id }}</del></th>
                 <td><del>{{ todo.title }}</del></td>
                 <td><del>{{ todo.due }}</del></td>
-                <td>완료</td>
+                <td><button type='button' class="btn btn-secondary" onclick="deleteTodo({{ todo.id }})">삭제</button></td>
               </tr>
               {% else %}
               <tr>
